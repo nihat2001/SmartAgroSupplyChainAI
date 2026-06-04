@@ -1,0 +1,61 @@
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: smartagro_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: test
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:latest
+    container_name: smartagro_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: smartagro_backend
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      REDIS_HOST: redis
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    image: python:3.11-slim
+    container_name: smartagro_frontend
+    working_dir: /app
+    environment:
+      BACKEND_URL: http://backend:8000
+    volumes:
+      - .:/app
+    command: >
+      sh -c "pip install streamlit httpx pandas plotly --quiet &&
+             streamlit run frontend.py --server.port=8501 --server.address=0.0.0.0 --server.headless=true"
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
