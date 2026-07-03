@@ -1,4 +1,12 @@
-# 🌾 SmartAgroSupplyChainAI
+---
+title: SmartAgroSupplyChainAI
+emoji: 🌾
+colorFrom: green
+colorTo: lightgreen
+sdk: streamlit
+app_file: frontend.py
+pinned: false
+---
 
 SmartAgroSupplyChainAI is a full-stack platform for managing agricultural product inventory and shipments, powered by **Groq AI (LLaMA 3.3-70b)** and **AI Tool Calling**.
 
